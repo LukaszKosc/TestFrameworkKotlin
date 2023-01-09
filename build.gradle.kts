@@ -15,7 +15,6 @@ repositories {
 dependencies {
     implementation("org.testng:testng:7.1.0")
     implementation("org.apache.maven.plugins:maven-surefire-plugin:3.0.0-M7")
-
 }
 
 tasks.test {
@@ -24,6 +23,9 @@ tasks.test {
         showStandardStreams = true
     }
     useTestNG()
+//    useTestNG() {
+//        testLogging.showStandardStreams = true
+//    }
 
 }
 
