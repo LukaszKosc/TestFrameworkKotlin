@@ -1,15 +1,16 @@
-package local.test.framework
+package local.test.framework.tests
 
+import local.test.framework.TestBase
 import org.testng.annotations.Test
 
 class TestClass : TestBase(){
 
     @Test
     fun my_test(){
-        println("some body")
+        println("changed body - after some change - hahaha")
     }
 
-    @Test
+    @Test(groups=["gr1", "grupa2"], testName = "test123")
     fun my_test2(){
         println("some body")
     }

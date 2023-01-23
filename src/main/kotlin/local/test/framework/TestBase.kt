@@ -3,7 +3,8 @@ package local.test.framework
 import org.testng.annotations.*
 import java.lang.reflect.Method
 
-open class TestBase {
+
+open class TestBase(){
     @BeforeClass
     fun beforeClass(){
         println("before class body ${this.javaClass.name}")
@@ -18,14 +19,14 @@ open class TestBase {
     }
     @AfterTest
     fun afterTest(){
-        println("after test body ${this.javaClass.name}")
+        println("after test bod123y ${this.javaClass.name}")
     }
     @BeforeMethod
     fun beforeMethod(method: Method){
-        println("before method name: '${method.name}'")
+        println("before method name: '${method.name}'.")
     }
     @AfterMethod
-    fun afterMethod(){
-        println("after method body ")
+    fun afterMethod(method: Method){
+        println("after method name: '${method.name}'.")
     }
 }
