@@ -1,16 +1,14 @@
 package local.test.framework
 
 import org.apache.commons.io.FileUtils
-import org.codehaus.classworlds.Launcher
-
 import org.testng.TestNG
 import org.testng.annotations.Test
 import org.testng.xml.XmlClass
+import org.testng.xml.XmlMethodSelector
 import org.testng.xml.XmlSuite
 import org.testng.xml.XmlTest
 import java.io.File
 import java.io.IOException
-import java.net.URL
 import java.util.*
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
@@ -40,29 +38,42 @@ open class Runner {
             val classes = getClassesDescription()
             removeLocalFiles()
 
-            classes.forEach { logger.info {"got class: '${it}'"} }
+//            classes.forEach { logger.info {"got class: '${it}'"} }
+            classes.forEach { logger.info {"got class: '${it.`class`}'"} }
 
-//            var myTestNG: TestNG = TestNG()
-//            var mySuite: XmlSuite = XmlSuite()
-//
-//            myTestNG.setUseDefaultListeners(false)
-//            mySuite.setName("Sample Suite")
-////            mySuite.addListener("local.local.test.TestListener");
-////            mySuite.addListener("org.uncommons.reportng.JUnitXMLReporter");
-//            var myTest: XmlTest = XmlTest(mySuite);
-//            myTest.setName("Sample Test");
-//            val myClasses: MutableList<XmlClass> = ArrayList<XmlClass>().toMutableList()
+            var myTestNG: TestNG = TestNG()
+            var mySuite: XmlSuite = XmlSuite()
+
+            myTestNG.setUseDefaultListeners(false)
+            mySuite.setName("Sample Suite")
+//            mySuite.addListener("local.local.test.TestListener");
+            mySuite.addListener("org.uncommons.reportng.JUnitXMLReporter");
+            var myTest: XmlTest = XmlTest(mySuite);
+            myTest.setName("Sample Test");
+            val myClasses: MutableList<XmlClass> = ArrayList<XmlClass>().toMutableList()
+
+            classes.forEach { myClasses += XmlClass(it.`class`) }
 //            myClasses += XmlClass("local.test.framework.tests.TestClass")
 //            myClasses += XmlClass("local.test.framework.tests.TestClass2")
 //
-//            myTest.xmlClasses = myClasses;
-//            var myTests: MutableList<XmlTest> = ArrayList<XmlTest>().toMutableList()
-//            myTests.add(myTest);
-//            mySuite.setTests(myTests);
-//            var mySuites: MutableList<XmlSuite> = ArrayList<XmlSuite>().toMutableList()
-//            mySuites.add(mySuite);
-//            myTestNG.setXmlSuites(mySuites);
-//            myTestNG.run();
+            myTest.xmlClasses = myClasses;
+            var myTests: MutableList<XmlTest> = ArrayList<XmlTest>().toMutableList()
+
+            myTests.add(myTest);
+            println("before tests")
+            myTests.forEach { println("${it.name}") }
+            println("after tests")
+            mySuite.setTests(myTests);
+            var mySuites: MutableList<XmlSuite> = ArrayList<XmlSuite>().toMutableList()
+            mySuites.add(mySuite);
+            myTestNG.setXmlSuites(mySuites);
+//            myTestNG.setGroups("grupa5")
+//            myTestNG.setGroups("grupa3")
+//            myTestNG.setGroups("grupa5,grupa3")
+//            myTestNG.setExcludedGroups("gr1")
+            myTestNG.setVerbose(10)
+            myTestNG.run()
+
         }
 
         fun unpackJar(jarFilePath: String, targetDir: String) {
@@ -162,8 +173,8 @@ open class Runner {
         fun getClassesDescription(clazzList: List<Object> = findClasses("local.test.framework.tests")): List<Object> {
             val clazzesList: MutableList<Map<String, Map<String, String>>> =
                 mutableListOf<Map<String, Map<String, String>>>().toMutableList()
-            var clazzDesc: MutableList<Map<String, MutableList<Map<String, String>>>> =
-                mutableListOf<Map<String, MutableList<Map<String, String>>>>().toMutableList()
+            var clazzDesc: MutableList<Map<String, MutableList<Map<String, Any>>>> =
+                mutableListOf<Map<String, MutableList<Map<String, Any>>>>().toMutableList()
             clazzList.forEach {
 
                 val className = it.`class`.name
@@ -172,7 +183,7 @@ open class Runner {
                 if (className.contains("TestClass")) {
 //                    println("className: $className")
 
-                    var myListOfMethods: MutableList<Map<String, String>> = mutableListOf()
+                    var myListOfMethods: MutableList<Map<String, Any>> = mutableListOf()
 //                    clazzesList += clazzDesc
                     it::class.declaredMembers.forEach { method ->
                         run {
@@ -185,23 +196,22 @@ open class Runner {
                                 val testAnnotation = method.findAnnotation<Test>()
 //                                println("testAnnotation: $testAnnotation")
                                 if (null != testAnnotation) {
-                                    val groups: Array<String> = testAnnotation.groups
                                     var groupsList = ""
-                                    if (groups != null) {
-                                        if (groups.isNotEmpty()) {
-                                            groups.forEach { group ->
-                                                groupsList += "$group,"
-//                                                println("group: $group")
-                                            }
-                                        }
-                                    }
-                                    groupsList = groupsList.dropLast(1)
-                                    myListOfMethods.add(mapOf("method" to method.name, "groups" to groupsList))
+                                    if (testAnnotation.groups.isNotEmpty())
+                                        testAnnotation.groups.forEach { group -> groupsList += "$group," }
+
+                                    myListOfMethods.add(mapOf(
+                                        "method" to method.name,
+                                        "priority" to testAnnotation.priority,
+                                        "description" to testAnnotation.description,
+                                        "alwaysRun" to testAnnotation.alwaysRun,
+                                        "testName" to testAnnotation.testName,
+                                        "suiteName" to testAnnotation.suiteName,
+                                        "groups" to groupsList.dropLast(1),
+                                        "enabled" to testAnnotation.enabled))
                                 }
                             }
                         }
-
-//                    clazzesList += clazzDesc
                     }
                     clazzDesc.add(
                         mapOf(

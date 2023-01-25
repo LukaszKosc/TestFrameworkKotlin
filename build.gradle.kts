@@ -19,6 +19,8 @@ dependencies {
     implementation("org.testng:testng:7.7.0")
     implementation("org.apache.maven.plugins:maven-surefire-plugin:3.0.0-M7")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.0")
+    implementation("org.freemarker:freemarker:2.3.28")
+    implementation(files("libs/reportng-1.2.2.jar"))
 }
 
 tasks.test {
