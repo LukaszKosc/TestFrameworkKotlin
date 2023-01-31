@@ -60,6 +60,15 @@ open class Runner {
             var myTests: MutableList<XmlTest> = ArrayList<XmlTest>().toMutableList()
 
             myTests.add(myTest);
+//            myTests.forEach { xx ->
+//                run {
+//                    println("each element: ${xx.classes}")
+//                    xx.classes.forEach { yy -> run {
+//                        yy.setParameters(mapOf("enable" to "false"))
+//                        println("clasa: "+ yy.name) } // clasa: local.test.framework.tests.TestClass
+//                    }
+//                }
+//            }
             println("before tests")
             myTests.forEach { println("${it.name}") }
             println("after tests")
@@ -171,13 +180,15 @@ open class Runner {
         }
 
         fun getClassesDescription(clazzList: List<Object> = findClasses("local.test.framework.tests")): List<Object> {
-            val clazzesList: MutableList<Map<String, Map<String, String>>> =
-                mutableListOf<Map<String, Map<String, String>>>().toMutableList()
+            val clazzesList: MutableList<Map<String, Map<String, Any>>> =
+                mutableListOf<Map<String, Map<String, Any>>>().toMutableList()
             var clazzDesc: MutableList<Map<String, MutableList<Map<String, Any>>>> =
                 mutableListOf<Map<String, MutableList<Map<String, Any>>>>().toMutableList()
-            clazzList.forEach {
 
-                val className = it.`class`.name
+            val outputClazzList: MutableList<Object> = mutableListOf<Object>().toMutableList()
+            clazzList.forEach { clazz ->
+
+                val className = clazz.`class`.name
 
 //                println("className: $className")
                 if (className.contains("TestClass")) {
@@ -185,7 +196,7 @@ open class Runner {
 
                     var myListOfMethods: MutableList<Map<String, Any>> = mutableListOf()
 //                    clazzesList += clazzDesc
-                    it::class.declaredMembers.forEach { method ->
+                    clazz::class.declaredMembers.forEach { method ->
                         run {
 //                        clazzDesc[className] = clazzDesc[className]!! + mapOf("method" to method.name)
 //                            println("method: ${method.name}")
@@ -199,9 +210,22 @@ open class Runner {
                                     var groupsList = ""
                                     if (testAnnotation.groups.isNotEmpty())
                                         testAnnotation.groups.forEach { group -> groupsList += "$group," }
-
+                                    var customAttrs = mutableListOf<Map<String, Any>>()
+                                    testAnnotation.attributes.iterator().forEach {
+                                        var arr = mutableListOf<String>()
+                                        it.values.forEach { xx -> arr.add(xx) }
+                                        customAttrs.add(mapOf(it.name to arr))
+                                    }
+//                                    Below if verifies if class contains method with customized attributes
+//                                    Ultimate idea here is to get&run via TestNG only methods with 'tags' or any other indicator defined via command line
+//                                    Currently I will disable it
+//                                    if (customAttrs.size > 0){
+//                                        outputClazzList += clazz
+//                                    }
                                     myListOfMethods.add(mapOf(
                                         "method" to method.name,
+//                                        "custom" to testAnnotation.attributes[0],
+                                        "custom" to customAttrs,
                                         "priority" to testAnnotation.priority,
                                         "description" to testAnnotation.description,
                                         "alwaysRun" to testAnnotation.alwaysRun,
@@ -222,10 +246,12 @@ open class Runner {
             }
             clazzDesc.forEach {
                 run {
-                    logger.info { "got element: ${it.entries}" }
+                    logger.info { "class description: ${it.entries}" }
+                    it.entries.forEach { xxx-> logger.info { "entries: ${xxx}}" }}
                 }
             }
-        return clazzList
+            return clazzList
+//            return outputClazzList
         }
     }
 

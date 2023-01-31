@@ -1,11 +1,13 @@
 package local.test.framework
 
-import org.testng.annotations.*
-import java.lang.reflect.Method
 import org.testng.Reporter
+import org.testng.annotations.*
+import org.testng.log4testng.Logger
+import java.lang.reflect.Method
 
 open class TestBase(){
     companion object{
+//        val LOGGER = Logger.getLogger(TestBase::class.java)
         fun log(logMsg: String){
             Reporter.log(logMsg)
         }
