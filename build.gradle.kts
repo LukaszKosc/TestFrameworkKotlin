@@ -20,6 +20,7 @@ dependencies {
     implementation("org.apache.maven.plugins:maven-surefire-plugin:3.0.0-M7")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.0")
     implementation("org.freemarker:freemarker:2.3.28")
+    implementation("org.apache-extras.beanshell:bsh:2.0b6")
     implementation(files("libs/reportng-1.2.2.jar"))
 }
 
@@ -69,7 +70,7 @@ tasks.register<Jar>("testJar") {
 
 tasks.register<Jar>("appJar") {
 //    archiveFileName.set("appMain-${project.version}.jar")
-    //sufficient appJar jar generation - line 'from(sourceSets.test.get().output)' provides classes from 'src/test/kotlin'
+//    sufficient appJar jar generation - line 'from(sourceSets.test.get().output)' provides classes from 'src/test/kotlin'
     from(sourceSets.main.get().output)
     manifest {
         attributes(mapOf("Main-Class" to "MainKt",
@@ -78,8 +79,9 @@ tasks.register<Jar>("appJar") {
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from(sourceSets.test.get().output)
-    dependsOn(configurations.runtimeClasspath)
-    dependsOn(configurations.compileClasspath)
+    dependsOn("testJar")
+//    dependsOn(configurations.runtimeClasspath)
+//    dependsOn(configurations.compileClasspath)
     from({
         configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
     })

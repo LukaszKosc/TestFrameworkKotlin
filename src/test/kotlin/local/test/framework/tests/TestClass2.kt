@@ -9,6 +9,7 @@ class TestClass2 : TestBase(){
     @Test(groups = ["group1"])
     fun my_test21(){
         println("my_test21 body")
+        1/0
     }
 
     @Test(groups = ["group2"])
